@@ -1,9 +1,6 @@
-import axios from "axios";
 import { UserCard } from "./components/UserCard";
 import "./styles.css";
-import { UserProfile } from "./types/userProfile";
-import { User } from "./types/api/user";
-import { useState } from "react";
+import { useAllUsers } from "./hooks/useAllUsers";
 
 // const user: UserProfile = {
 //   id: 1,
@@ -13,33 +10,13 @@ import { useState } from "react";
 // };
 
 export default function App() {
-  const [userProfiles, setUserProfiles] = useState<Array<UserProfile>>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  const onClickFetchUser = () => {
-    setLoading(true);
-    setError(false);
-
-    axios
-      .get<Array<User>>("https://jsonplaceholder.typicode.com/users")
-      .then((res) => {
-        const data = res.data.map((user) => ({
-          id: user.id,
-          name: `user.name(${user.username})`,
-          email: user.email,
-          address: `${user.address.city}${user.address.suite}${user.address.street}`
-        }));
-        setUserProfiles(data);
-      })
-      .catch(() => {
-        setError(true);
-      })
-      // finallyを使うためには、es2018にする。tsconfig.jsonを書き換えること
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  // カスタムフックを使う
+  // 関数の実行結果を受け取れる。ここではその中で定義したgetUsers()も受けとっている
+  // use関数で定義したstateも受け取って使える。stateの状態が変わってもリアルタイムに
+  // 反映される。
+  // 複数の箇所でカスタムフックを使っても、stateはそれぞれ独立となる
+  const { getUsers, userProfiles, loading, error } = useAllUsers();
+  const onClickFetchUser = () => getUsers();
   return (
     <div className="App">
       <button onClick={onClickFetchUser}>データ取得</button>
